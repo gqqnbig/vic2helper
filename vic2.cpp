@@ -1,4 +1,5 @@
 ﻿#include <Windows.h>
+#include <detours.h>
 
 #include "../hooking_common.h"
 
@@ -38,6 +39,10 @@ void* GetFunc2HookAddr()
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvReserved)
 {
+	if (DetourIsHelperProcess()) {
+		return TRUE;
+	}
+
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
 
