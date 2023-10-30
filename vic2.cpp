@@ -1,6 +1,8 @@
 ﻿#include <Windows.h>
 #include <detours.h>
 
+#include <string>
+
 #include "../hooking_common.h"
 
 const uint32_t drawSettingsRVA = 0x35C0D0;
@@ -45,11 +47,38 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvRese
 
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
+		__try {
+			DetourRestoreAfterWith();
+			DetourTransactionBegin();
+			DetourUpdateThread(GetCurrentThread());
+			LONG res = DetourAttach((PVOID*)singlePlayerButton_clickedRVA, NewSettings);
+			MessageBox(NULL, std::to_string(res).c_str(), "", 0);
+			if (res == NOERROR)
+				DetourTransactionCommit();
+			else
+			{
+
+				DetourTransactionAbort();
+				MessageBox(NULL, std::to_string(res).c_str(), "", 0);
+			}
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			// 捕获并处理异常
+			// 异常信息可以在GetExceptionCode和GetExceptionInformation中获取
+			DWORD exceptionCode = GetExceptionCode();
+			//void* exceptionInfo = GetExceptionInformation();
+
+			// 显示异常消息
+			std::string errorMsg = "异常代码: " + std::to_string(exceptionCode);
+			MessageBoxA(nullptr, errorMsg.c_str(), "异常消息", MB_ICONERROR);
+
+		}
 
 		//MessageBox(NULL, "Process attach!", "Inject All The Things!", 0);
 		//HMODULE gdiPlusModule = FindModuleInProcess(GetCurrentProcess(), ("gdiplus.dll"));
 		//void* localHookFunc4 = GetProcAddress(gdiPlusModule, ("GdipSetSolidFillColor"));
-		InstallHook(GetFunc2HookAddr(), NewSettings);
+		//InstallHook(GetFunc2HookAddr(), NewSettings);
 	}
 	return true;
 }
