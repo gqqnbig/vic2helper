@@ -6,7 +6,7 @@
 #include "../hooking_common.h"
 
 const uint32_t drawSettingsRVA = 0x35C0D0;
-const uint32_t singlePlayerButton_clickedRVA = 0x362E10;
+auto singlePlayerButton_clickedRVA = reinterpret_cast<int (* const)(int th)>(0x362E10);
 
 int NewSettings()
 {
