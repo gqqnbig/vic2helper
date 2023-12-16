@@ -51,7 +51,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvRese
 			DetourRestoreAfterWith();
 			DetourTransactionBegin();
 			DetourUpdateThread(GetCurrentThread());
-			LONG res = DetourAttach((PVOID*)singlePlayerButton_clickedRVA, NewSettings);
+			LONG res = DetourAttach(&(PVOID&)singlePlayerButton_clickedRVA, NewSettings);
 			MessageBox(NULL, std::to_string(res).c_str(), "", 0);
 			if (res == NOERROR)
 				DetourTransactionCommit();
