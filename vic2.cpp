@@ -38,6 +38,14 @@ void* GetFunc2HookAddr()
 	return (void*)func2HookAddr;
 }
 
+void SetStdOutToNewConsole()
+{
+	FILE* fpFile;
+	AllocConsole(); // or AttachConsole(ATTACH_PARENT_PROCESS); // if parent has one
+	freopen_s(&fpFile, "CONOUT$", "w", stdout); // redirect stdout to console
+	freopen_s(&fpFile, "CONOUT$", "w", stderr); // redirect stderr to console
+	freopen_s(&fpFile, "CONIN$", "r", stdin); // redirect stdin to console
+}
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvReserved)
 {
@@ -47,6 +55,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvRese
 
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
+		SetStdOutToNewConsole();
+		printf("Start hooking\n");
 		__try {
 			DetourRestoreAfterWith();
 			DetourTransactionBegin();
