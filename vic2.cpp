@@ -1,9 +1,12 @@
 ﻿#include <Windows.h>
+#include <detours.h>
+
+#include <string>
 
 #include "../hooking_common.h"
 
 const uint32_t drawSettingsRVA = 0x35C0D0;
-const uint32_t singlePlayerButton_clickedRVA = 0x362E10;
+auto singlePlayerButton_clickedRVA = reinterpret_cast<int (* const)(int th)>(0x362E10);
 
 int NewSettings()
 {
@@ -38,13 +41,46 @@ void* GetFunc2HookAddr()
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvReserved)
 {
+	if (DetourIsHelperProcess()) {
+		return TRUE;
+	}
+
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
+		__try {
+			DetourRestoreAfterWith();
+			DetourTransactionBegin();
+			DetourUpdateThread(GetCurrentThread());
+
+			uint32_t func2HookAddr = (uint32_t)GetBaseModuleForProcess(GetCurrentProcess()) + reinterpret_cast<uint32_t>(singlePlayerButton_clickedRVA);
+
+			LONG res = DetourAttach(&(PVOID&)func2HookAddr, NewSettings);
+			if (res == NOERROR)
+				DetourTransactionCommit();
+			else
+			{
+
+				DetourTransactionAbort();
+				MessageBox(NULL, std::to_string(res).c_str(), "", 0);
+			}
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			// 捕获并处理异常
+			// 异常信息可以在GetExceptionCode和GetExceptionInformation中获取
+			DWORD exceptionCode = GetExceptionCode();
+			//void* exceptionInfo = GetExceptionInformation();
+
+			// 显示异常消息
+			std::string errorMsg = "Error code: " + std::to_string(exceptionCode);
+			MessageBox(nullptr, errorMsg.c_str(), "Hooking Failed", MB_ICONERROR);
+
+		}
 
 		//MessageBox(NULL, "Process attach!", "Inject All The Things!", 0);
 		//HMODULE gdiPlusModule = FindModuleInProcess(GetCurrentProcess(), ("gdiplus.dll"));
 		//void* localHookFunc4 = GetProcAddress(gdiPlusModule, ("GdipSetSolidFillColor"));
-		InstallHook(GetFunc2HookAddr(), NewSettings);
+		//InstallHook(GetFunc2HookAddr(), NewSettings);
 	}
 	return true;
 }
