@@ -55,7 +55,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvRese
 			uint32_t func2HookAddr = (uint32_t)GetBaseModuleForProcess(GetCurrentProcess()) + reinterpret_cast<uint32_t>(singlePlayerButton_clickedRVA);
 
 			LONG res = DetourAttach(&(PVOID&)func2HookAddr, NewSettings);
-			MessageBox(NULL, std::to_string(res).c_str(), "", 0);
 			if (res == NOERROR)
 				DetourTransactionCommit();
 			else
@@ -73,8 +72,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD ul_reason_for_call, LPVOID lpvRese
 			//void* exceptionInfo = GetExceptionInformation();
 
 			// 显示异常消息
-			std::string errorMsg = "异常代码: " + std::to_string(exceptionCode);
-			MessageBoxA(nullptr, errorMsg.c_str(), "异常消息", MB_ICONERROR);
+			std::string errorMsg = "Error code: " + std::to_string(exceptionCode);
+			MessageBox(nullptr, errorMsg.c_str(), "Hooking Failed", MB_ICONERROR);
 
 		}
 
