@@ -1,5 +1,19 @@
 ﻿#include <Windows.h>
-#include <detours.h>
+//#include <detours.h>
+
+#define DETOUR_DEBUG 1
+
+#undef _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE
+typedef long NTSTATUS;
+#include <ntstatus.h>
+#define WIN32_NO_STATUS
+#define DETOURS_INTERNAL
+#include "detours.h"
+#include "Detours\src\detours.cpp"
+#include "Detours\src\disasm.cpp"
+#include "Detours\src\image.cpp"
+#include "Detours\src\modules.cpp"
+#include "Detours\src\creatwth.cpp"
 
 #include <string>
 
